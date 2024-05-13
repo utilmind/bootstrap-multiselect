@@ -512,49 +512,52 @@
          * Builds the button of the multiselect.
          */
         buildButton: function () {
-            this.$button = $(this.options.templates.button).addClass(this.options.buttonClass);
-            if (this.$select.attr('class') && this.options.inheritClass) {
-                this.$button.addClass(this.$select.attr('class'));
+            var me = this;
+
+            me.$button = $(me.options.templates.button)
+                                .addClass(me.options.buttonClass);
+            if (me.$select.attr('class') && me.options.inheritClass) {
+                me.$button.addClass(me.$select.attr('class'));
             }
             // Adopt active state.
-            if (this.$select.prop('disabled')) {
-                this.disable();
+            if (me.$select.prop('disabled')) {
+                me.disable();
             }
             else {
-                this.enable();
+                me.enable();
             }
 
             // Manually add button width if set.
-            if (this.options.buttonWidth && this.options.buttonWidth !== 'auto') {
-                this.$button.css({
-                    'width': '100%' //this.options.buttonWidth,
+            if (me.options.buttonWidth && me.options.buttonWidth !== 'auto') {
+                me.$button.css({
+                    'width': '100%' //me.options.buttonWidth,
                 });
-                this.$container.css({
-                    'width': this.options.buttonWidth
+                me.$container.css({
+                    'width': me.options.buttonWidth
                 });
             }
 
-            if (this.options.buttonTextAlignment) {
-                switch (this.options.buttonTextAlignment) {
+            if (me.options.buttonTextAlignment) {
+                switch (me.options.buttonTextAlignment) {
                     case 'left':
-                        this.$button.addClass('text-left');
+                        me.$button.addClass('text-left');
                         break;
                     case 'center':
-                        this.$button.addClass('text-center');
+                        me.$button.addClass('text-center');
                         break;
                     case 'right':
-                        this.$button.addClass('text-right');
+                        me.$button.addClass('text-right');
                         break;
                 }
             }
 
             // Keep the tab index from the select.
-            var tabindex = this.$select.attr('tabindex');
+            var tabindex = me.$select.attr('tabindex');
             if (tabindex) {
-                this.$button.attr('tabindex', tabindex);
+                me.$button.attr('tabindex', tabindex);
             }
 
-            this.$container.prepend(this.$button);
+            me.$container.prepend(me.$button);
         },
 
         /**
@@ -663,14 +666,8 @@
 
                 // Apply or unapply the configured selected class.
                 if (me.options.selectedClass) {
-                    if (checked) {
-                        $target.closest('.multiselect-option')
-                            .addClass(me.options.selectedClass);
-                    }
-                    else {
-                        $target.closest('.multiselect-option')
-                            .removeClass(me.options.selectedClass);
-                    }
+                    $target.closest('.multiselect-option')
+                        .toggleClass(me.options.selectedClass, checked);
                 }
 
                 // Get the corresponding option.
@@ -707,11 +704,11 @@
                             $optionsNotThis.prop('selected', false);
 
                             // It's a single selection, so close.
-                            me.$button.click();
+                            me.$button.trigger('click');
                         }
 
-                        if (me.options.selectedClass === "active") {
-                            $optionsNotThis.closest(".dropdown-item").css("outline", "");
+                        if (me.options.selectedClass === 'active') {
+                            $optionsNotThis.closest('.dropdown-item').css('outline', '');
                         }
                     }
                     else {
@@ -840,7 +837,7 @@
 
                 // keyCode 9 == Tab
                 if (event.keyCode === 9 && me.$container.hasClass('show')) {
-                    me.$button.click();
+                    me.$button.trigger('click');
                 }
                 // keyCode 13 = Enter
                 else if (event.keyCode == 13) {
@@ -1127,7 +1124,7 @@
                     $('button', $resetButton).text(this.options.resetText);
                 }
 
-                $('button', $resetButton).click($.proxy(function () {
+                $('button', $resetButton).on('click', $.proxy(function () {
                     this.clearSelection();
                 }, this));
 
