@@ -976,8 +976,8 @@
                 $checkbox.attr('name', name);
             }
 
-            $item.prepend($wrapper);
-            $item.attr("title", title || labelContent);
+            $item.prepend($wrapper)
+                 .attr("title", title || labelContent);
 
             return $checkbox;
         },
@@ -1117,16 +1117,10 @@
 
                 var $resetButton = $(this.options.templates.resetButton);
 
-                if (this.options.enableHTML) {
-                    $('button', $resetButton).html(this.options.resetText);
-                }
-                else {
-                    $('button', $resetButton).text(this.options.resetText);
-                }
-
-                $('button', $resetButton).on('click', $.proxy(function () {
-                    this.clearSelection();
-                }, this));
+                $('button', $resetButton)[this.options.enableHTML ? 'html' : 'text'](this.options.resetText)
+                        .on('click', $.proxy(function () {
+                            this.clearSelection();
+                        }, this));
 
                 this.$popupContainer.prepend($resetButton);
             }
