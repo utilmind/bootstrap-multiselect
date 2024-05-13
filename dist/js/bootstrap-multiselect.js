@@ -62,8 +62,8 @@
             after: ['options', 'value', 'selectedOptions', 'enable', 'disable'],
 
             init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-                var $element = $(element);
-                var config = ko.toJS(valueAccessor());
+                var $element = $(element),
+                    config = ko.toJS(valueAccessor());
 
                 $element.multiselect(config);
 
@@ -163,11 +163,11 @@
             },
 
             update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-                var $element = $(element);
-                var config = ko.toJS(valueAccessor());
+                var $element = $(element),
+                    config = ko.toJS(valueAccessor());
 
-                $element.multiselect('setOptions', config);
-                $element.multiselect('rebuild');
+                $element.multiselect('setOptions', config)
+                        .multiselect('rebuild');
             }
         };
     }
@@ -188,66 +188,67 @@
      * @returns {Multiselect}
      */
     function Multiselect(select, options) {
+        var me = this,
+            $select = me.$select = $(select);
 
-        this.$select = $(select);
-        this.options = this.mergeOptions($.extend({}, options, this.$select.data()));
+        options = me.options = me.mergeOptions($.extend({}, options, $select.data()));
 
         // Placeholder via data attributes
-        if (this.$select.attr("data-placeholder")) {
-            this.options.nonSelectedText = this.$select.data("placeholder");
+        if ($select.attr("data-placeholder")) {
+            options.nonSelectedText = $select.data("placeholder");
         }
 
         // Initialization.
         // We have to clone to create a new reference.
-        this.originalOptions = this.$select.clone()[0].options;
-        this.query = '';
-        this.searchTimeout = null;
-        this.lastToggledInput = null;
-        this.multiselectId = this.generateUniqueId() + '_' + multiselectCount;
-        this.internalIdCount = 0;
+        me.originalOptions = $select.clone()[0].options;
+        me.query = '';
+        me.searchTimeout = null;
+        me.lastToggledInput = null;
+        me.multiselectId = me.generateUniqueId() + '_' + multiselectCount;
+        me.internalIdCount = 0;
 
-        this.options.multiple = this.$select.attr('multiple') === "multiple";
-        this.options.onChange = $.proxy(this.options.onChange, this);
-        this.options.onSelectAll = $.proxy(this.options.onSelectAll, this);
-        this.options.onDeselectAll = $.proxy(this.options.onDeselectAll, this);
-        this.options.onDropdownShow = $.proxy(this.options.onDropdownShow, this);
-        this.options.onDropdownHide = $.proxy(this.options.onDropdownHide, this);
-        this.options.onDropdownShown = $.proxy(this.options.onDropdownShown, this);
-        this.options.onDropdownHidden = $.proxy(this.options.onDropdownHidden, this);
-        this.options.onInitialized = $.proxy(this.options.onInitialized, this);
-        this.options.onFiltering = $.proxy(this.options.onFiltering, this);
+        options.multiple = $select.attr('multiple') === "multiple";
+        options.onChange = $.proxy(options.onChange, me);
+        options.onSelectAll = $.proxy(options.onSelectAll, me);
+        options.onDeselectAll = $.proxy(options.onDeselectAll, me);
+        options.onDropdownShow = $.proxy(options.onDropdownShow, me);
+        options.onDropdownHide = $.proxy(options.onDropdownHide, me);
+        options.onDropdownShown = $.proxy(options.onDropdownShown, me);
+        options.onDropdownHidden = $.proxy(options.onDropdownHidden, me);
+        options.onInitialized = $.proxy(options.onInitialized, me);
+        options.onFiltering = $.proxy(options.onFiltering, me);
 
         // Build select all if enabled.
-        this.buildContainer();
-        this.buildButton();
-        this.buildDropdown();
-        this.buildReset();
-        this.buildSelectAll();
-        this.buildDropdownOptions();
-        this.buildFilter();
-        this.buildButtons();
+        me.buildContainer();
+        me.buildButton();
+        me.buildDropdown();
+        me.buildReset();
+        me.buildSelectAll();
+        me.buildDropdownOptions();
+        me.buildFilter();
+        me.buildButtons();
 
-        this.updateButtonText();
-        this.updateSelectAll(true);
+        me.updateButtonText();
+        me.updateSelectAll(true);
 
-        if (this.options.enableClickableOptGroups && this.options.multiple) {
-            this.updateOptGroups();
+        if (options.enableClickableOptGroups && options.multiple) {
+            me.updateOptGroups();
         }
 
-        this.options.wasDisabled = this.$select.prop('disabled');
-        if (this.options.disableIfEmpty && $('option', this.$select).length <= 0 && !this.options.wasDisabled) {
-            this.disable(true);
+        options.wasDisabled = $select.prop('disabled');
+        if (options.disableIfEmpty && $('option', $select).length <= 0 && !options.wasDisabled) {
+            me.disable(true);
         }
 
-        this.$select.wrap('<span class="multiselect-native-select" />').after(this.$container);
-        this.$select.prop('tabindex', '-1');
+        $select.wrap('<span class="multiselect-native-select" />').after(me.$container);
+        $select.prop('tabindex', '-1');
 
-        if (this.options.widthSynchronizationMode !== 'never') {
-            this.synchronizeButtonAndPopupWidth();
+        if (options.widthSynchronizationMode !== 'never') {
+            me.synchronizeButtonAndPopupWidth();
         }
 
-        this.$select.data('multiselect', this);
-        this.options.onInitialized(this.$select, this.$container);
+        $select.data('multiselect', me);
+        options.onInitialized($select, me.$container);
     }
 
     Multiselect.prototype = {
@@ -488,20 +489,23 @@
          * Builds the container of the multiselect.
          */
         buildContainer: function () {
-            this.$container = $(this.options.buttonContainer);
-            if (this.options.widthSynchronizationMode !== 'never') {
-                this.$container.on('show.bs.dropdown', $.proxy(function () {
+            var me = this,
+                $container = me.$container = $(me.options.buttonContainer),
+                options = me.options;
+
+            if (options.widthSynchronizationMode !== 'never') {
+                $container.on('show.bs.dropdown', $.proxy(function () {
                     // the width needs to be synchronized again in case the width of the button changed in between
-                    this.synchronizeButtonAndPopupWidth();
-                    this.options.onDropdownShow();
-                }, this));
+                    me.synchronizeButtonAndPopupWidth();
+                    options.onDropdownShow();
+                }, me));
             }
             else {
-                this.$container.on('show.bs.dropdown', this.options.onDropdownShow);
+                $container.on('show.bs.dropdown', options.onDropdownShow);
             }
-            this.$container.on('hide.bs.dropdown', this.options.onDropdownHide);
-            this.$container.on('shown.bs.dropdown', this.options.onDropdownShown);
-            this.$container.on('hidden.bs.dropdown', this.options.onDropdownHidden);
+            $container.on('hide.bs.dropdown', options.onDropdownHide)
+                      .on('shown.bs.dropdown', options.onDropdownShown)
+                      .on('hidden.bs.dropdown', options.onDropdownHidden);
         },
 
         /**
@@ -600,7 +604,7 @@
                 switch (this.options.widthSynchronizationMode) {
                     case 'always':
                         $popupContainer.css('min-width', buttonWidth)
-                                            .css('max-width', buttonWidth);
+                                       .css('max-width', buttonWidth);
                         break;
                     case 'ifPopupIsSmaller':
                         $popupContainer.css('min-width', buttonWidth);
@@ -896,20 +900,10 @@
                             id = $input.attr('id'),
                             $option = me.getOptionById(id);
 
-                        if (checked) {
-                            $input.prop('checked', 1)
-                                    .closest('.dropdown-item')
-                                        .addClass(me.options.selectedClass);
-
-                            $option.prop('selected', 1);
-                        }
-                        else {
-                            $input.prop('checked', 0)
-                                    .closest('.dropdown-item')
-                                        .removeClass(me.options.selectedClass);
-
-                            $option.prop('selected', 0);
-                        }
+                        $input.prop('checked', checked)
+                                .closest('.dropdown-item')
+                                    .toggleClass(me.options.selectedClass, checked);
+                        $option.prop('selected', checked);
 
                         $options.push($option);
                     }, me))
